@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "npm run test",
-    "start": "node server.js"
+    "dev": "NODE_ENV=development nodemon server.js",
+    "prod": "NODE_ENV=production nodemon server.js"
   },
   "author": "Cory Asato",
   "license": "MIT",
@@ -18,5 +19,8 @@
     "multer": "^1.1.0",
     "superagent": "^2.0.0",
     "uuid": "^2.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.9.2"
   }
 }

@@ -1,50 +1,39 @@
 const request = require('superagent');
 const uuid = require('uuid');
 
-const localhost = 'http://api.localhost.local:5000';
-
 function uploadToS3(s3, file) {
-  console.log("UPLOADING TO S3!");
   return new Promise((resolve, reject) => {
     s3.upload({
       ACL: 'public-read',
       Body: file.buffer,
-      Bucket: 'hackster-dev',
+      Bucket: process.env['AWS_BUCKET'],
       Key: `uploads/tmp/${uuid.v4()}/${file.originalname}`
     }, {}, (err, data) => {
-      err ? reject("UPLOAD TO S3: " + err) : resolve(data);
+      err ? reject("Error uploading to S3: " + err) : resolve(data);
     });
   });
 }
 
-function postURLToServer(url, apiPath, token, projectID, modelType, fileType) {
-  console.log("POSTING TO SERVER! ", url);
+function postURLToServer(url, token) {
   return new Promise((resolve, reject) => {
     request
-      .post(`${apiPath}/private/files`)
+      .post(`http://${process.env['HACKSTER_API_PATH']}/private/files`)
       .set('Authorization', `Bearer ${token}`)
       .set('Origin', 'http://localhost:8080')
-      .send({
-        'file_url': url,
-        'file_type': fileType || 'image',
-        'attachable_id': projectID,
-        'attachable_type': modelType
-      })
-      .end(function(err, res) {
-        console.log("POST TO SERVER ERROR: ", err);
-        err ? reject('POST TO SERVER: ' + err) : resolve({id: res.body.id});
+      .send({'file_url': url})
+      .end((err, res) => {
+        err ? reject('Error posting to server: ' + err) : resolve({id: res.body.id});
       });
   });
 }
 
-function uploadHandler(s3, file, body) {
+function uploadHandler(s3, req) {
   return new Promise((resolve, reject) => {
-    return uploadToS3(s3, file)
+    return uploadToS3(s3, req.file)
       .then(data => {
-        console.log("IS API LOCALHOST? ", body.apiPath);
-        return body.apiPath === localhost
+        return process.env.NODE_ENV === 'development' && req.hostname === 'localhost'
           ? Promise.resolve({url: data.Location})
-          : postURLToServer(data.Location, body.apiPath, body.token, body.projectID, body.modelType, 'image')
+          : postURLToServer(data.Location, req.token);
       })
       .then(urlOrId => resolve(urlOrId))
       .catch(err => reject(err));
