@@ -26,7 +26,7 @@ function verifyAuthToken(req, res, next) {
 
   if(!token) return next();
 
-  if(process.env.NODE_ENV === 'development' && req.hostname === 'localhost') {
+  if(process.env.NODE_ENV === 'development' && req.get('x-host') === 'localhost') {
     req.token = token;
     return next();
   }

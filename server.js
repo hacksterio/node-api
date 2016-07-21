@@ -19,12 +19,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
-  res.status(200);
+  res.status(200).send('Cheers!');
 });
 
 app.post('/v2/files', verifyAuthToken, upload.single('file'), (req, res, next) => {
-  // This might break since fastly proxies the request.
-  console.log("HOSTNAME", req.hostname);
+
   if(!req.token) {
     return res.status(401).send('Authorization Token is required in request!');
   }

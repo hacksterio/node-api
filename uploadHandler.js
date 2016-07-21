@@ -31,7 +31,7 @@ function uploadHandler(s3, req) {
   return new Promise((resolve, reject) => {
     return uploadToS3(s3, req.file)
       .then(data => {
-        return process.env.NODE_ENV === 'development' && req.hostname === 'localhost'
+        return process.env.NODE_ENV === 'development' && req.get('x-host') === 'localhost'
           ? Promise.resolve({url: data.Location})
           : postURLToServer(data.Location, req.token);
       })
