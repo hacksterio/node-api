@@ -14,12 +14,12 @@ function uploadToS3(s3, file) {
   });
 }
 
-function postURLToServer(url, token) {
+function postURLToServer(url, req) {
   return new Promise((resolve, reject) => {
     request
       .post(`http://${process.env['HACKSTER_API_PATH']}/private/files`)
-      .set('Authorization', `Bearer ${token}`)
-      .set('Origin', 'http://localhost:8080')
+      .set('Authorization', `Bearer ${req.token}`)
+      .set('Origin', req.get('origin'))
       .send({'file_url': url})
       .end((err, res) => {
         err ? reject('Error posting to server: ' + err) : resolve({id: res.body.id});
@@ -33,7 +33,7 @@ function uploadHandler(s3, req) {
       .then(data => {
         return process.env.NODE_ENV === 'development' && req.get('x-host') === 'localhost'
           ? Promise.resolve({url: data.Location})
-          : postURLToServer(data.Location, req.token);
+          : postURLToServer(data.Location, req);
       })
       .then(urlOrId => resolve(urlOrId))
       .catch(err => reject(err));
