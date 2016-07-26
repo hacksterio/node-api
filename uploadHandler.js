@@ -17,7 +17,7 @@ function uploadToS3(s3, file) {
 function postURLToServer(url, req) {
   return new Promise((resolve, reject) => {
     request
-      .post(`http://${process.env['HACKSTER_API_PATH']}/private/files`)
+      .post(`https://${process.env['HACKSTER_API_PATH']}/private/files`)
       .set('Authorization', `Bearer ${req.token}`)
       .set('Origin', req.get('origin'))
       .send({'file_url': url})
