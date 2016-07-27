@@ -19,7 +19,7 @@ function postURLToServer(url, req) {
     request
       .post(`https://${process.env['HACKSTER_API_PATH']}/private/files`)
       .set('Authorization', `Bearer ${req.token}`)
-      .set('Origin', req.get('origin'))
+      .set('Origin', ${process.env['HACKSTER_ORIGIN']})
       .send({'file_url': url})
       .end((err, res) => {
         err ? reject('Error posting to server: ' + err) : resolve({id: res.body.id});
